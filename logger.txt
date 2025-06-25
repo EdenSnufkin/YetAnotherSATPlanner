@@ -1,0 +1,126 @@
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos2) [0]
+1: (move-obj obj1 pos2 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / No Solution found
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / No Solution found
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / No Solution found
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos2) [0]
+1: (move-obj obj1 pos2 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos2) [0]
+1: (move-obj obj1 pos2 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos2) [0]
+1: (move-obj obj1 pos2 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos2) [0]
+1: (move-obj obj1 pos2 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / 
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / 
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj1 pos1 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj1 pos1 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj1 pos1 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj1 pos1 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj1 pos1 pos2) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos1) [0]
+1: (move-obj obj1 pos1 pos2) [0]
+2: (move-obj obj1 pos2 pos2) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj3 pos3 pos1) [0]
+1: (move-obj obj1 pos1 pos2) [0]
+2: (move-obj obj2 pos2 pos3) [0]
+3: (move-obj obj3 pos1 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj3 pos3 pos1) [0]
+1: (move-obj obj1 pos1 pos2) [0]
+2: (move-obj obj2 pos2 pos3) [0]
+
+

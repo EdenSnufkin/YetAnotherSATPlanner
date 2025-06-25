@@ -14,21 +14,28 @@ Solve(){
 
 }
 
+Test(){
+
+    java -cp classes:lib/pddl4j-4.0.0.jar:lib/org.sat4j.core.jar -server -Xms2048m -Xmx2048m fr.uga.pddl4j.yasp.TestPlanner ./domain.pddl ./problem_test
+}
+
 show_menus() {
     echo "| 1. Compile SAT Planner"
     echo "| 2. Solve Domain/Problem"
-    echo "| 3. Exit"
+    echo "| 3. Test on simple problems"
+    echo "| 4. Exit"
     echo " ----------"
 }
 
 
 read_options(){
     local choice
-    read -p "Enter choice [1 - 3] : " choice
+    read -p "Enter choice [1 - 4] : " choice
     case $choice in
         1) Compile ;;
         2) Solve ;;
-        3) exit 0;;
+        3) Test ;;
+        4) exit 0;;
         *) echo "Error..." && sleep 1 && return
     esac
 }

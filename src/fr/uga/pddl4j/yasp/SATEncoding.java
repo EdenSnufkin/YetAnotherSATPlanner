@@ -5,6 +5,7 @@ import fr.uga.pddl4j.plan.SequentialPlan;
 import fr.uga.pddl4j.problem.Fluent;
 import fr.uga.pddl4j.problem.Problem;
 import fr.uga.pddl4j.problem.operator.Action;
+import fr.uga.pddl4j.problem.operator.ConditionalEffect;
 import fr.uga.pddl4j.util.BitVector;
 
 import java.util.List;
@@ -97,7 +98,6 @@ public final class SATEncoding {
             {
                 clause.add(-pair(i,1));
             }
-            clause.add(0);
             this.initList.add(clause);
         }
 
@@ -111,8 +111,7 @@ public final class SATEncoding {
         }
 
         for(Integer fluent:this.goalList){
-            this.currentGoal.add(new ArrayList<Integer>(){{add(pair(fluent,1));
-            add(0);}});
+            this.currentGoal.add(new ArrayList<Integer>(){{add(pair(fluent,1));}});
         }
 
         //check if goal is in initList => TODO !!!
@@ -127,9 +126,10 @@ public final class SATEncoding {
 
             actionEffectNeg.clear();
             actionEffectPos.clear();
-            
-            actionEffectPos = actions.get(i).getConditionalEffects().get(0).getEffect().getPositiveFluents(); //Only works for 1 effect and not conditionnal (condition = 0)
-            actionEffectNeg = actions.get(i).getConditionalEffects().get(0).getEffect().getNegativeFluents();
+            for (ConditionalEffect condition: actions.get(i).getConditionalEffects()){
+                actionEffectPos.or(condition.getEffect().getPositiveFluents()); 
+                actionEffectNeg.or(condition.getEffect().getNegativeFluents());}
+
             this.actionPreconditionList.add(new ArrayList<Integer>());
             this.actionEffectPosList.add(new ArrayList<Integer>());
             this.actionEffectNegList.add(new ArrayList<Integer>());
@@ -141,6 +141,14 @@ public final class SATEncoding {
             }
         }
         
+        for(int i=0;i<(this.nb_fluents);i++){
+            int u[] = unpair(pair(i,1));
+            System.out.println("fluent n°"+i+" encode en " + pair(i,1) + " unpaired : " + u[0] + "/" + u[1]);
+        }
+        for(int i=0;i<this.nb_actions;i++){
+            int u[] = unpair(pair(i+nb_fluents,1));
+            System.out.println("Action n°"+i+" encode en " + pair(i+this.nb_fluents,1)+ " unpaired : " + u[0] + "/" + u[1]);
+        }
 
         
         encode(1, steps);
@@ -154,8 +162,7 @@ public final class SATEncoding {
         //copy goal with right "final step"
         for(Integer fluent: this.goalList){
             this.currentGoal.add(new ArrayList<Integer>(){{
-                        add(pair(fluent,to));
-                        add(0);}});
+                        add(pair(fluent,to));}});
         }
 
         //copy initList into dimacs
@@ -167,7 +174,7 @@ public final class SATEncoding {
         int action_value;
         List<Integer> clause;
 
-        for(int curr_step=1;curr_step<to;curr_step++){
+        for(int curr_step=1;curr_step<to+1;curr_step++){
             //an action, when applicable, has some effects
             //(no ai or AND pi ) AND (no ai or AND ei+1)
             for(int i=0;i<nb_actions;i++){
@@ -177,23 +184,22 @@ public final class SATEncoding {
                     clause = new ArrayList<Integer>();
                     clause.add(pair(fluent,curr_step));
                     clause.add(-action_value);
-                    clause.add(0);
                     this.currentDimacs.add(clause);
                 }
                 //no ai or AND ei+1
-                for(Integer fluent:this.actionEffectPosList.get(i)){
-                    clause = new ArrayList<Integer>();
-                    clause.add(-action_value);
-                    clause.add(pair(fluent,curr_step+1));
-                    clause.add(0);
-                    this.currentDimacs.add(clause);
-                }
-                for(Integer fluent:this.actionEffectNegList.get(i)){
-                    clause = new ArrayList<Integer>();
-                    clause.add(-action_value);
-                    clause.add(pair(fluent,curr_step+1));
-                    clause.add(0);
-                    this.currentDimacs.add(clause);
+                if (curr_step!=to){
+                    for(Integer fluent:this.actionEffectPosList.get(i)){
+                        clause = new ArrayList<Integer>();
+                        clause.add(-action_value);
+                        clause.add(pair(fluent,curr_step+1));
+                        this.currentDimacs.add(clause);
+                    }
+                    for(Integer fluent:this.actionEffectNegList.get(i)){
+                        clause = new ArrayList<Integer>();
+                        clause.add(-action_value);
+                        clause.add(pair(fluent,curr_step+1));
+                        this.currentDimacs.add(clause);
+                    }
                 }
 
                 //no 2 actions in same step
@@ -204,7 +210,6 @@ public final class SATEncoding {
                         clause = new ArrayList<Integer>();
                         clause.add(-action_value);
                         clause.add(-pair(j+nb_fluents,curr_step));
-                        clause.add(0);
                         this.currentDimacs.add(clause);
                     }
                 }
@@ -220,7 +225,6 @@ public final class SATEncoding {
                     if(this.actionEffectPosList.get(action).contains(i)){ 
                         clause.add(pair(action+nb_fluents,curr_step));}
                 }
-                clause.add(0);
                 this.currentDimacs.add(clause);
                 
                 //no Fi OR Fi+1 OR (OR Ai with fi in effect- ai)
@@ -231,7 +235,6 @@ public final class SATEncoding {
                     if(this.actionEffectNegList.get(action).contains(i)){ 
                         clause.add(pair(action+nb_fluents,curr_step));}
                 }
-                clause.add(0);
                 this.currentDimacs.add(clause);
             }
             
@@ -280,7 +283,7 @@ public final class SATEncoding {
                     Fluent fluent = problem.getFluents().get(b - 1);
                     u = u + problem.toString(fluent)  + "\n";
                 } else {
-                    u = u + problem.toShortString(problem.getActions().get(b - nb_fluents - 1)) + "\n";
+                    u = u + problem.toShortString(problem.getActions().get(b - nb_fluents)) + "\n";
                 }
             }
         }
@@ -305,7 +308,7 @@ public final class SATEncoding {
             step = couple[1];
             // This is a positive (asserted) action
             if (bitnum > nb_fluents) {
-                final Action action = problem.getActions().get(bitnum - nb_fluents - 1);
+                final Action action = problem.getActions().get(bitnum - nb_fluents);
                 sequence.put(step, action);
             }
         }

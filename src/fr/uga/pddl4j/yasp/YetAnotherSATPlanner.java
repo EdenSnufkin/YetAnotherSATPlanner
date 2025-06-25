@@ -124,14 +124,13 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                 try{
                     VecEncoding = new Vec<IVecInt>();
                     for (List<Integer> clause:currentEncoding){
-                        clause.remove(new Integer(0));
                         vecIntEnco = new VecInt(clause.stream().mapToInt(i->i).toArray());
                         VecEncoding.push(vecIntEnco);
                     }
                     
                     if(!VecEncoding.isEmpty()){solver.addAllClauses(VecEncoding);}
                     //System.out.println(solver.toString());
-                    if(verbose){solver.printInfos(systemWriter);}
+                    //if(verbose){solver.printInfos(systemWriter);}
                     doSearch = !ip.isSatisfiable();
                 }
                 catch(Exception e){
@@ -143,6 +142,7 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                     System.out.println("Problem is Satisfiable !");
                     final List<Integer> solution = Arrays.stream(solver.model()).boxed().collect(Collectors.toList()); 
                     plan = sat.extractPlan(solution,problem);
+                    plan.remove(plan.actions().size()-1);
                 } else {
                     System.out.println("Problem isn't Satisfiable :()");
                     steps++;
@@ -150,7 +150,6 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                     sat.next();
                 }
             }
-
             systemWriter.close();
         }
         return plan;
