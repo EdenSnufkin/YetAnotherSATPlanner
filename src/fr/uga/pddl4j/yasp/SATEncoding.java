@@ -141,16 +141,6 @@ public final class SATEncoding {
             }
         }
         
-        for(int i=0;i<(this.nb_fluents);i++){
-            int u[] = unpair(pair(i,1));
-            System.out.println("fluent n°"+i+" encode en " + pair(i,1) + " unpaired : " + u[0] + "/" + u[1]);
-        }
-        for(int i=0;i<this.nb_actions;i++){
-            int u[] = unpair(pair(i+nb_fluents,1));
-            System.out.println("Action n°"+i+" encode en " + pair(i+this.nb_fluents,1)+ " unpaired : " + u[0] + "/" + u[1]);
-        }
-
-        
         encode(1, steps);
     }
 
@@ -174,7 +164,7 @@ public final class SATEncoding {
         int action_value;
         List<Integer> clause;
 
-        for(int curr_step=1;curr_step<to+1;curr_step++){
+        for(int curr_step=1;curr_step<to;curr_step++){
             //an action, when applicable, has some effects
             //(no ai or AND pi ) AND (no ai or AND ei+1)
             for(int i=0;i<nb_actions;i++){
@@ -187,7 +177,7 @@ public final class SATEncoding {
                     this.currentDimacs.add(clause);
                 }
                 //no ai or AND ei+1
-                if (curr_step!=to){
+                if (curr_step!=to-1){
                     for(Integer fluent:this.actionEffectPosList.get(i)){
                         clause = new ArrayList<Integer>();
                         clause.add(-action_value);

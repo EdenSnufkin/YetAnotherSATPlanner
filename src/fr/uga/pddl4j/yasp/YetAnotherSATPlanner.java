@@ -1,17 +1,13 @@
 package fr.uga.pddl4j.yasp;
 
-import fr.uga.pddl4j.heuristics.state.FastForward;
-import fr.uga.pddl4j.parser.DefaultParsedProblem;
-import fr.uga.pddl4j.parser.ErrorManager;
-import fr.uga.pddl4j.parser.Message;
-import fr.uga.pddl4j.parser.Parser;
-import fr.uga.pddl4j.problem.DefaultProblem;
-import fr.uga.pddl4j.problem.Problem;
-import fr.uga.pddl4j.problem.State;
-import fr.uga.pddl4j.planners.statespace.AbstractStateSpacePlanner;
-import fr.uga.pddl4j.planners.statespace.HSP;
-import fr.uga.pddl4j.planners.LogLevel;
-import fr.uga.pddl4j.plan.Plan;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
@@ -20,12 +16,18 @@ import org.sat4j.specs.IProblem;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.IVecInt;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.*;
+import fr.uga.pddl4j.heuristics.state.FastForward;
+import fr.uga.pddl4j.parser.DefaultParsedProblem;
+import fr.uga.pddl4j.parser.ErrorManager;
+import fr.uga.pddl4j.parser.Message;
+import fr.uga.pddl4j.parser.Parser;
+import fr.uga.pddl4j.plan.Plan;
+import fr.uga.pddl4j.planners.LogLevel;
+import fr.uga.pddl4j.planners.statespace.AbstractStateSpacePlanner;
+import fr.uga.pddl4j.planners.statespace.HSP;
+import fr.uga.pddl4j.problem.DefaultProblem;
+import fr.uga.pddl4j.problem.Problem;
+import fr.uga.pddl4j.problem.State;
 
 /**
  * The class shows how to use PDDL4J + SAT4J libraries to create a SAT planner.
@@ -50,6 +52,9 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
     static final int TIMEOUT = 3600;
 
     static final boolean DEBUG = false;
+
+    //stats for each solve action (nb_variables / nb_fluents / nb_actions / time to solve / nb_clauses / steps_needed)
+    public List<List<Integer>> statList = new ArrayList<>();
 
     /**
      * Instantiates the planning problem from a parsed problem.
@@ -76,6 +81,7 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
         int stepmax = MAXSTEPS;
         Plan plan = null;
 
+
         // Compute a heuristic lower bound for plan steps
         final FastForward ff = new FastForward(problem);
         final int hlb = ff.estimate(new State(problem.getInitialState()), problem.getGoal());
@@ -84,7 +90,7 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
             System.out.println("At least " + hlb + " steps are necessary.");
             System.exit(0);
         } else {
-
+            long timer = System.currentTimeMillis();
             // Intial number of steps of the SAT encoding
             int steps = hlb;
 
@@ -142,7 +148,23 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                     System.out.println("Problem is Satisfiable !");
                     final List<Integer> solution = Arrays.stream(solver.model()).boxed().collect(Collectors.toList()); 
                     plan = sat.extractPlan(solution,problem);
-                    plan.remove(plan.actions().size()-1);
+                    List<Integer> stats = new ArrayList<Integer>();
+                    timer = System.currentTimeMillis() - timer;
+                    System.out.println("Solving took " + timer + "ms");
+
+                    //Adding Stats to statlist
+                    int nb_fluents = problem.getFluents().size();
+                    int nb_actions= problem.getActions().size();
+                    stats.add(nb_fluents + nb_actions);
+                    stats.add(nb_fluents);
+                    stats.add(nb_actions);
+                    stats.add((int)(long)timer);
+                    stats.add(solver.nConstraints());
+                    stats.add(steps);
+                    statList.add(stats);
+
+
+
                 } else {
                     System.out.println("Problem isn't Satisfiable :()");
                     steps++;
@@ -155,6 +177,13 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
         return plan;
     }
 
+public void printStats(FileWriter fW){
+    try {
+        for(List<Integer> stats: statList){
+            fW.write("nb_variables "+ stats.get(0) +"/ nb_fluents "+ stats.get(1) +"/ nb_actions "+ stats.get(2) +"/ time to solve "+ stats.get(3) +"/ nb_clauses "+ stats.get(4) +"/ steps_needed " + stats.get(5));}
+    }catch(Exception e){e.printStackTrace();}
+}
+
     public static void main(final String[] args) {
 
         // Checks the number of arguments from the command line
@@ -164,6 +193,12 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
         }
 
         try {
+
+
+            File logger = new File("logger.txt");        
+            if(logger.createNewFile()){System.out.println("Logger file created");}        
+            FileWriter loggerWriter = new FileWriter(logger,true);
+           
             // Creates an instance of the PDDL parser
             final Parser parser = new Parser();
             parser.setLogLevel(LogLevel.OFF);
@@ -200,19 +235,25 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                         if (plan != null) {
                             System.out.println("YetAnotherSATPlanner Plan:");
                             System.out.println(problem.toString(plan));
+                            planner.printStats(loggerWriter);
+                            long timer = System.currentTimeMillis();
                             final AbstractStateSpacePlanner solverHSP = new HSP();
                             try{
                                 plan = solverHSP.solve(problem);
+                                timer = System.currentTimeMillis() - timer;
                                 System.out.println("HSP Plan :");
                                 System.out.println(problem.toString(plan));
+                                System.out.println("HSP Timer : " + timer);
+                                loggerWriter.write(" HSPTime : " + timer);
                             } catch (Exception e) {e.printStackTrace();} 
                         } else {
                             System.out.println("No solution found!");
                         }
                 }
             }
+            loggerWriter.close();
             // This exception could happen if the domain or the problem does not exist
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

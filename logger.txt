@@ -124,3 +124,34 @@ Problem :problem_test.pddl / YetAnotherSATPlanner plan :
 2: (move-obj obj2 pos2 pos3) [0]
 
 
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj3 pos3 pos1) [0]
+1: (move-obj obj2 pos2 pos3) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos3) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos1) [0]
+
+
+
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos1) [0]
+1: (move-obj obj1 pos1 pos2) [0]
+
+
+nb_variables 196/ nb_fluents 56/ nb_actions 140/ time to solve 8243/ nb_clauses 150503/ steps_needed 20 HSPTime : 3556
