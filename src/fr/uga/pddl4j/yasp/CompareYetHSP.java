@@ -13,6 +13,7 @@ import fr.uga.pddl4j.parser.DefaultParsedProblem;
 import fr.uga.pddl4j.plan.Plan;
 import fr.uga.pddl4j.planners.Statistics;
 import fr.uga.pddl4j.planners.statespace.HSP;
+import fr.uga.pddl4j.planners.statespace.GSP;
 import fr.uga.pddl4j.problem.Problem;
 import fr.uga.pddl4j.planners.LogLevel;
 
@@ -83,18 +84,31 @@ public class CompareYetHSP{
                     final Plan planHSP =  plannerHSP.solve(problemHSP);
                     final Statistics statsHSP = plannerHSP.getStatistics();
 
+
+                    final GSP plannerGSP = new GSP();
+                    plannerGSP.setLogLevel(LogLevel.ERROR);
+                    final DefaultParsedProblem problemParsedGSP = plannerGSP.parse(domain,problem_name);
+                    final Problem problemGSP = plannerGSP.instantiate(problemParsedGSP);
+                    final Plan planGSP =  plannerGSP.solve(problemGSP);
+                    final Statistics statsGSP = plannerGSP.getStatistics();
+
                     dataset.add(new String[]{
                         problem_name,
                         String.valueOf(statsYet.getNumberOfActions()),
                         String.valueOf(statsYet.getTimeToEncode()),
                         String.valueOf(statsYet.getTimeToSearch()),
                         String.valueOf(statsHSP.getTimeToEncode()),
-                        String.valueOf(statsHSP.getTimeToSearch())});
+                        String.valueOf(statsHSP.getTimeToSearch()),
+                        String.valueOf(statsGSP.getTimeToEncode()),
+                        String.valueOf(statsGSP.getTimeToSearch())
+                    });
 
                     System.out.println("YET plan :\n");
                     System.out.println(problemYet.toString(planYet));
                     System.out.println("HSP plan :\n");
                     System.out.println(problemHSP.toString(planHSP));
+                    System.out.println("GSP plan :\n");
+                    System.out.println(problemGSP.toString(planGSP));
 
 
                 } catch (Exception e){

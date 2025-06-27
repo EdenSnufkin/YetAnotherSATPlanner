@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.Icon;
+
 import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
+import org.sat4j.specs.IConstr;
 import org.sat4j.specs.IProblem;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.IVecInt;
@@ -41,7 +44,7 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
      * @param args the command line arguments.
      */
 
-    static final int MAXSTEPS = 100;
+    static final int MAXSTEPS = 50;
     // SAT solver max number of var
     static final int MAXVAR = 1000000;
     // SAT solver max number of clauses
@@ -128,24 +131,23 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
             IProblem ip = solver;
             // Search starts here!
             boolean doSearch = true;
-            List<List<Integer>> currentEncoding = new ArrayList<List<Integer>>();
-            Vec<IVecInt> VecEncoding;
+            List<IConstr> oldGoal = new ArrayList<IConstr>();
             VecInt vecIntEnco;
             
             long timersolver = System.currentTimeMillis();
             while (doSearch && !(steps > stepmax)) {
-                currentEncoding = Stream.concat(sat.currentDimacs.stream(), sat.currentGoal.stream())
-                  .collect(Collectors.toList());
-                solver.reset();
+                oldGoal.clear();
                 try{
-                    VecEncoding = new Vec<IVecInt>();
-                    for (List<Integer> clause:currentEncoding){
+                    for (List<Integer> clause:sat.currentDimacs){
                         vecIntEnco = new VecInt(clause.stream().mapToInt(i->i).toArray());
-                        VecEncoding.push(vecIntEnco);
+                        solver.addClause(vecIntEnco);
                     }
-                    
-                    if(!VecEncoding.isEmpty()){solver.addAllClauses(VecEncoding);}
-                    timer = System.currentTimeMillis();
+
+                    for (List<Integer> clause: sat.currentGoal){
+                        vecIntEnco = new VecInt(clause.stream().mapToInt(i->i).toArray());
+                        oldGoal.add(solver.addClause(vecIntEnco));
+                    }
+
                     doSearch = !ip.isSatisfiable();
                     
                 }
@@ -164,10 +166,13 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
 
                 } else {
                     System.out.println("Problem isn't Satisfiable :()");
+                    for(IConstr clause:oldGoal){
+                        solver.removeConstr(clause);
+                    }
                     steps++;
                     timer = System.currentTimeMillis();
                     sat.next();
-                    stats.setTimeToEncode(stats.getTimeToEncode()+ System.currentTimeMillis() - timer);
+                    stats.setTimeToEncode(stats.getTimeToEncode() + System.currentTimeMillis() - timer);
                 }
             }
         }

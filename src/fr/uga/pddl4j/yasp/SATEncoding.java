@@ -140,13 +140,23 @@ public final class SATEncoding {
                 if(actionEffectNeg.get(j)){this.actionEffectNegList.get(i).add(j);}
             }
         }
+
+        //copy initList into dimacs
+        
+
         
         encode(1, steps);
+        
     }
 
     private void encode(int from, int to) {
-        this.currentDimacs.clear();
         this.currentGoal.clear();
+        this.currentDimacs.clear();
+        if(from==1){
+            for( List<Integer> sublist : this.initList){
+                this.currentDimacs.add(new ArrayList<>(sublist));
+            }
+        }
         final int nb_fluents = this.nb_fluents;
 
         //copy goal with right "final step"
@@ -155,16 +165,12 @@ public final class SATEncoding {
                         add(pair(fluent,to));}});
         }
 
-        //copy initList into dimacs
-        for( List<Integer> sublist : this.initList){
-            this.currentDimacs.add(new ArrayList<>(sublist));
-        }
-
+ 
         
         int action_value;
         List<Integer> clause;
 
-        for(int curr_step=1;curr_step<to;curr_step++){
+        for(int curr_step=from;curr_step<to;curr_step++){
             //an action, when applicable, has some effects
             //(no ai or AND pi ) AND (no ai or AND ei+1)
             for(int i=0;i<nb_actions;i++){
@@ -240,7 +246,7 @@ public final class SATEncoding {
      */
     public void next() {
         this.steps++;
-        encode(this.steps, this.steps);
+        encode(this.steps-1, this.steps);
     }
 
     public String toString(final List<Integer> clause, final Problem problem) {
