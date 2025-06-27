@@ -155,3 +155,26 @@ Problem :problem_test.pddl / YetAnotherSATPlanner plan :
 
 
 nb_variables 196/ nb_fluents 56/ nb_actions 140/ time to solve 8243/ nb_clauses 150503/ steps_needed 20 HSPTime : 3556
+
+Beginning Test with domain :./domain.pddl
+Problem :problem_test.pddl / YetAnotherSATPlanner plan : 
+0: (move-obj obj2 pos2 pos1) [0]
+1: (move-obj obj1 pos1 pos2) [0]
+
+
+nb_variables 196/ nb_fluents 56/ nb_actions 140/ time to solve 20362/ nb_clauses 150503/ steps_needed 20 HSPTime : 6707* ParsedProblem features:
+       0 number of actions 
+       0 number of relevant facts 
+
+* Time spent:
+    0.00 seconds parsing 
+    0.00 seconds encoding 
+    0.00 seconds searching
+    0.00 seconds total time
+
+* Memory used:
+    0.00 MBytes for problem representation
+    0.00 MBytes for searching
+    0.00 MBytes total
+
+
