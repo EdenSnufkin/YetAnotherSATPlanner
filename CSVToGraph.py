@@ -7,10 +7,12 @@ df = df.T
 N = df[0].size
 ind = np.arange(N)
 width = 0.27
+names = np.array(df[0],dtype=str)
+names = np.char.strip(names,'problem_test_2/')
 
-fig, axis = plt.subplot(1,2)
+fig, axis = plt.subplots(1,2)
 
-ax =axis[0, 0]
+ax =axis[0]
 
 YASPvals = df[3]
 HSPvals = df[6]
@@ -22,7 +24,7 @@ rects3 = ax.bar(ind+width*2,GSPvals,width,color='b')
 
 ax.set_ylabel('Time to Solve')
 ax.set_xticks(ind+width)
-ax.set_xticklabels(df[0])
+ax.set_xticklabels(names)
 ax.legend((rects1[0],rects2[0],rects3[0]),('YASP','HSP','GSP'))
 
 def autolabel(rects):
@@ -36,7 +38,7 @@ autolabel(rects2)
 autolabel(rects3)
 
 
-ax = axis[0,1]
+ax = axis[1]
 
 YASPvals = df[4]
 HSPvals = df[7]
@@ -48,11 +50,12 @@ rects3 = ax.bar(ind+width*2,GSPvals,width,color='b')
 
 ax.set_ylabel('Time to Solve')
 ax.set_xticks(ind+width)
-ax.set_xticklabels(df[0])
+ax.set_xticklabels(names)
 ax.legend((rects1[0],rects2[0],rects3[0]),('YASP','HSP','GSP'))
         
 autolabel(rects1)
 autolabel(rects2)
 autolabel(rects3)
 
+plt.savefig('Comparaison.png')
 plt.show()
