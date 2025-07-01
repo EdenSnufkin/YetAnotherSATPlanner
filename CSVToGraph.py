@@ -11,6 +11,7 @@ names = np.array(df[0],dtype=str)
 names = np.char.strip(names,'problem_test_2/')
 
 fig, axis = plt.subplots(1,2)
+fig.set_size_inches(30,10)
 
 ax =axis[0]
 
