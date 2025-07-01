@@ -5,17 +5,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javax.swing.Icon;
 
-import org.sat4j.core.Vec;
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.IConstr;
 import org.sat4j.specs.IProblem;
 import org.sat4j.specs.ISolver;
-import org.sat4j.specs.IVecInt;
 
 import fr.uga.pddl4j.heuristics.state.FastForward;
 import fr.uga.pddl4j.parser.DefaultParsedProblem;

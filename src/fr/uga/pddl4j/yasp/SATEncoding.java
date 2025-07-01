@@ -1,16 +1,18 @@
 package fr.uga.pddl4j.yasp;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
 import fr.uga.pddl4j.plan.Plan;
 import fr.uga.pddl4j.plan.SequentialPlan;
 import fr.uga.pddl4j.problem.Fluent;
 import fr.uga.pddl4j.problem.Problem;
 import fr.uga.pddl4j.problem.operator.Action;
-import fr.uga.pddl4j.problem.operator.ConditionalEffect;
+import fr.uga.pddl4j.problem.operator.Condition;
+import fr.uga.pddl4j.problem.operator.Effect;
 import fr.uga.pddl4j.util.BitVector;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * This class implements a planning problem/domain encoding into DIMACS
@@ -33,26 +35,25 @@ public final class SATEncoding {
     /*
      * Actions
      */
+    private List<Action> actions = new ArrayList<Action>();
     private List<List<Integer>> actionPreconditionList = new ArrayList<List<Integer>>();
-    private List<List<Integer>> actionEffectPosList = new ArrayList<List<Integer>>();
-    private List<List<Integer>> actionEffectNegList = new ArrayList<List<Integer>>();
+    private List<List<Integer>> actionEffectList = new ArrayList<List<Integer>>();
     private int nb_actions;
 
     /*
      * State transistions
      */
-    /*
     private HashMap<Integer, List<Integer>> addList = new HashMap<Integer, List<Integer>>();
     private HashMap<Integer, List<Integer>> delList = new HashMap<Integer, List<Integer>>();
     private List<List<Integer>> stateTransitionList = new ArrayList<List<Integer>>();
-    */
+    
 
     /*
      * Action disjunctions
      */
-    /*
+    
     private List<List<Integer>> actionDisjunctionList = new ArrayList<List<Integer>>();
-    */
+    
 
     /*
      * Current DIMACS encoding of the planning domain and problem for #steps steps
@@ -83,8 +84,8 @@ public final class SATEncoding {
         this.nb_fluents = problem.getFluents().size();
         //System.out.println(" fluents = " + nb_fluents );
         final BitVector init = problem.getInitialState().getPositiveFluents();
-        final List<Action> actions = problem.getActions();
-        this.nb_actions = actions.size();
+        this.actions = problem.getActions();
+        this.nb_actions = this.actions.size();
         List<Integer> clause;
 
         // InitList => format Dimacs
@@ -116,40 +117,14 @@ public final class SATEncoding {
 
         //check if goal is in initList => TODO !!!
 
-        //action precondition and effect
-        BitVector actionPrecond;
-        BitVector actionEffectPos = new BitVector(nb_fluents);
-        BitVector actionEffectNeg = new BitVector(nb_fluents);
-
-        for(int i=0;i<this.nb_actions;i++){
-            actionPrecond = actions.get(i).getPrecondition().getPositiveFluents();
-
-            actionEffectNeg.clear();
-            actionEffectPos.clear();
-            for (ConditionalEffect condition: actions.get(i).getConditionalEffects()){
-                actionEffectPos.or(condition.getEffect().getPositiveFluents()); 
-                actionEffectNeg.or(condition.getEffect().getNegativeFluents());}
-
-            this.actionPreconditionList.add(new ArrayList<Integer>());
-            this.actionEffectPosList.add(new ArrayList<Integer>());
-            this.actionEffectNegList.add(new ArrayList<Integer>());
-            
-            for(int j=0;j<this.nb_fluents;j++){
-                if(actionPrecond.get(j)){this.actionPreconditionList.get(i).add(j);}
-                if(actionEffectPos.get(j)){this.actionEffectPosList.get(i).add(j);}
-                if(actionEffectNeg.get(j)){this.actionEffectNegList.get(i).add(j);}
-            }
-        }
-
-        //copy initList into dimacs
-        
 
         
         encode(1, steps);
         
     }
 
-    private void encode(int from, int to) {
+    private void encode(int from, int to){
+
         this.currentGoal.clear();
         this.currentDimacs.clear();
         if(from==1){
@@ -165,76 +140,74 @@ public final class SATEncoding {
                         add(pair(fluent,to));}});
         }
 
- 
-        
-        int action_value;
-        List<Integer> clause;
+        for(int t=from;t<=to;t++){
+            //reset list
+            this.actionDisjunctionList.clear();
+            this.actionPreconditionList.clear();
+            this.actionEffectList.clear();
+            this.stateTransitionList.clear();
+            this.addList.clear();
+            this.delList.clear();
 
-        for(int curr_step=from;curr_step<to;curr_step++){
-            //an action, when applicable, has some effects
-            //(no ai or AND pi ) AND (no ai or AND ei+1)
-            for(int i=0;i<nb_actions;i++){
-                //no ai or AND pi
-                action_value= pair(i+ nb_fluents,curr_step);
-                for(Integer fluent:this.actionPreconditionList.get(i)){
-                    clause = new ArrayList<Integer>();
-                    clause.add(pair(fluent,curr_step));
-                    clause.add(-action_value);
-                    this.currentDimacs.add(clause);
-                }
-                //no ai or AND ei+1
-                if (curr_step!=to-1){
-                    for(Integer fluent:this.actionEffectPosList.get(i)){
-                        clause = new ArrayList<Integer>();
-                        clause.add(-action_value);
-                        clause.add(pair(fluent,curr_step+1));
-                        this.currentDimacs.add(clause);
-                    }
-                    for(Integer fluent:this.actionEffectNegList.get(i)){
-                        clause = new ArrayList<Integer>();
-                        clause.add(-action_value);
-                        clause.add(pair(fluent,curr_step+1));
-                        this.currentDimacs.add(clause);
-                    }
-                }
+            //action clauses
+            for(int a=0;a<this.nb_actions;a++){
+                Action action = this.actions.get(a);
+                int actionVal = pair(nb_fluents + a, t);
 
-                //no 2 actions in same step
-                //no ai or no bi
-                for(int j=0;j<this.nb_actions;j++)
-                {
-                    if(i!=j){
-                        clause = new ArrayList<Integer>();
-                        clause.add(-action_value);
-                        clause.add(-pair(j+nb_fluents,curr_step));
-                        this.currentDimacs.add(clause);
-                    }
+                //precond & effect
+                Condition pre = action.getPrecondition();
+                BitVector posPre = pre.getPositiveFluents();
+                BitVector posNeg = pre.getNegativeFluents();
+
+                Effect eff = action.getUnconditionalEffect();
+                BitVector effPos = eff.getPositiveFluents();
+                BitVector effNeg = eff.getNegativeFluents();
+                for(int fluent=0;fluent<nb_fluents;fluent++){
+                    if(posPre.get(fluent)) { this.actionPreconditionList.add(Arrays.asList(-actionVal,pair(fluent,t)));}
+                    if(posNeg.get(fluent)) { this.actionPreconditionList.add(Arrays.asList(-actionVal,-pair(fluent,t)));}
+                    if(effPos.get(fluent)) { this.actionEffectList.add(Arrays.asList(-actionVal,pair(fluent,t+1)));
+                                             this.addList.computeIfAbsent(pair(fluent,t), k-> new ArrayList<>()).add(actionVal);}
+                    if(effNeg.get(fluent)) { this.actionEffectList.add(Arrays.asList(-actionVal,-pair(fluent,t+1)));
+                                             this.delList.computeIfAbsent(pair(fluent,t), k-> new ArrayList<>()).add(actionVal);}
+                }
+                
+                //No 2 action at same time
+                for(int b = a+1;b<this.nb_actions;b++){
+                    int actionValB = pair(nb_fluents + b,t);
+                    this.actionDisjunctionList.add(Arrays.asList(-actionVal,-actionValB));
                 }
             }
 
-            //explanatory frame axiom
-            for(int i=0;i<nb_fluents;i++){
-                //Fi OR no Fi+1 OR (OR Ai with fi in effect+ ai) AND
-                clause = new ArrayList<Integer>();
-                clause.add(pair(i,curr_step));
-                clause.add(-pair(i,curr_step+1));
-                for(int action=0;action<nb_actions;action++){
-                    if(this.actionEffectPosList.get(action).contains(i)){ 
-                        clause.add(pair(action+nb_fluents,curr_step));}
+            //frameAxiom
+            if(t < to){
+                for(int fluent=0;fluent<this.nb_fluents;fluent++){
+                    int fi = pair(fluent,t);
+                    int fip1 = pair(fluent,t+1);
+
+                    List<Integer> adds = this.addList.getOrDefault(fi, new ArrayList<>());
+                    List<Integer> dels = this.delList.getOrDefault(fi, new ArrayList<>());
+
+                    List<Integer> clause = new ArrayList<>();
+                    clause.add(fi);
+                    clause.add(-fip1);
+                    clause.addAll(adds);
+                    stateTransitionList.add(clause);
+
+                    clause = new ArrayList<>();
+                    clause.add(-fi);
+                    clause.add(fip1);
+                    clause.addAll(dels);
+                    stateTransitionList.add(clause);
                 }
-                this.currentDimacs.add(clause);
-                
-                //no Fi OR Fi+1 OR (OR Ai with fi in effect- ai)
-                clause = new ArrayList<Integer>();
-                clause.add(-pair(i,curr_step));
-                clause.add(pair(i,curr_step+1));
-                for(int action=0;action<nb_actions;action++){
-                    if(this.actionEffectNegList.get(action).contains(i)){ 
-                        clause.add(pair(action+nb_fluents,curr_step));}
-                }
-                this.currentDimacs.add(clause);
             }
             
+            //add all clauses
+            this.currentDimacs.addAll(this.actionPreconditionList);
+            this.currentDimacs.addAll(this.actionEffectList);
+            this.currentDimacs.addAll(this.actionDisjunctionList);
+            this.currentDimacs.addAll(this.stateTransitionList);
         }
+
         System.out.println("Encoding : successfully done (" + (this.currentDimacs.size()
                 + this.currentGoal.size()) + " clauses, " + to + " steps)");
     }
@@ -308,6 +281,7 @@ public final class SATEncoding {
                 sequence.put(step, action);
             }
         }
+
         for (int s = sequence.keySet().size(); s > 0 ; s--) {
             plan.add(0, sequence.get(s));
         }

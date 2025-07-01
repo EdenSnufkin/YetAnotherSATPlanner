@@ -24,6 +24,7 @@ Compare(){
 	read -p "Enter domain file [path to the file]: " domainFile
 	read -p "Enter problem directory [path to the directory]: " problemFile
     java -cp classes:lib/pddl4j-4.0.0.jar:lib/org.sat4j.core.jar -server -Xms2048m -Xmx2048m fr.uga.pddl4j.yasp.CompareYetHSP $domainFile $problemFile
+    python3 CSVToGraph.py
  }
 
 show_menus() {

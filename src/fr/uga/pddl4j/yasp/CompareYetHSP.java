@@ -97,18 +97,22 @@ public class CompareYetHSP{
                         String.valueOf(statsYet.getNumberOfActions()),
                         String.valueOf(statsYet.getTimeToEncode()),
                         String.valueOf(statsYet.getTimeToSearch()),
+                        String.valueOf(planYet.size()),
                         String.valueOf(statsHSP.getTimeToEncode()),
                         String.valueOf(statsHSP.getTimeToSearch()),
+                        String.valueOf(planHSP.size()),
                         String.valueOf(statsGSP.getTimeToEncode()),
-                        String.valueOf(statsGSP.getTimeToSearch())
+                        String.valueOf(statsGSP.getTimeToSearch()),
+                        String.valueOf(planGSP.size())
+
                     });
 
                     System.out.println("YET plan :\n");
                     System.out.println(problemYet.toString(planYet));
                     System.out.println("HSP plan :\n");
-                    System.out.println(problemHSP.toString(planHSP));
+                    System.out.println(problemHSP.toString(planHSP));/* 
                     System.out.println("GSP plan :\n");
-                    System.out.println(problemGSP.toString(planGSP));
+                    System.out.println(problemGSP.toString(planGSP));*/
 
 
                 } catch (Exception e){
